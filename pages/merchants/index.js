@@ -8,6 +8,8 @@ export async function getStaticProps() {
     }
 }
 
+Merchants.merchantPage = true
+
 export default function Merchants({ data }) {
     return (
         <div>
