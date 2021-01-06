@@ -4,7 +4,7 @@ import { useReducer } from "react"
 export default function Authentication() {
     const { user, signinWithGoogle, ...auth } = useAuth()
     const [{ email, password, isNewUser }, dispatch] = useReducer(
-        (state, {key, value}), 
+        (state, {key, value}) => ({...state, [key]: value}), 
         {
             email: '',
             password: '',
