@@ -8,7 +8,7 @@ export default function Cart() {
 	const [total, setTotal] = useState(0);
 	const {
 		push,
-		query: { slug },
+		query: { slug, tx_ref },
 	} = useRouter();
 
 	useEffect(() => {
@@ -24,9 +24,13 @@ export default function Cart() {
 	}, [cart]);
 
 	const checkout = async () => {
-		const response = await axios.post("/api/initialize", {
+		const url = tx_ref
+			? `/api/initialize?tx_ref=${tx_ref}`
+			: "/api/initialize";
+		const response = await axios.post(url, {
 			amount: total,
 			merchant: slug,
+			cart,
 		});
 
 		const { redirect_url, error } = response.data;

@@ -6,13 +6,19 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 	res.statusCode = 200;
 	res.setHeader("Content-Type", "application/json");
 
-	let { amount, merchant } = req.body,
+	let { amount, cart, merchant } = req.body,
 		redirect_url,
 		error;
 
-	const { id: tx_ref } = await firestore
-		.collection(`merchants/${merchant}/orders`)
-		.add({ amount, status: "pending" });
+	let { tx_ref } = req.query;
+
+	if (!tx_ref) {
+		let response = await firestore
+			.collection(`merchants/${merchant}/orders`)
+			.add({ amount, cart, status: "pending" });
+
+		tx_ref = response.id;
+	}
 
 	try {
 		const response = await axios.post(
@@ -24,8 +30,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 				payment_options: "account, banktransfer, card",
 				redirect_url:
 					process.env.NODE_ENV === "production"
-						? "https://jumga.vercel.app/api/confirm-order"
-						: "http://localhost:3000/api/confirm-order",
+						? `https://jumga.vercel.app/api/confirm-order/${merchant}`
+						: `http://localhost:3000/api/confirm-order/${merchant}`,
 				customer: {
 					email: "ed@gmail.com",
 				},
