@@ -1,4 +1,3 @@
-import { firestore } from "lib/firebase";
 import { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 
@@ -6,37 +5,24 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 	res.statusCode = 200;
 	res.setHeader("Content-Type", "application/json");
 
-	let { amount, cart, merchant, subaccount } = req.body,
+	let { slug } = req.query,
 		redirect_url,
-		currency = "NGN",
 		error;
-
-	// console.log(subaccount);
-
-	let { tx_ref } = req.query;
-
-	if (!tx_ref) {
-		let response = await firestore
-			.collection(`merchants/${merchant}/orders`)
-			.add({ amount, cart, status: "pending" });
-
-		tx_ref = response.id;
-	}
 
 	try {
 		const response = await axios.post(
 			"https://api.flutterwave.com/v3/payments",
 			{
-				tx_ref,
-				amount,
+				tx_ref: `${slug}-${new Date().getTime()}`,
+				amount: 10000,
 				currency: "NGN",
 				payment_options: "account, banktransfer, card",
 				redirect_url:
 					process.env.NODE_ENV === "production"
-						? `https://jumga.vercel.app/api/confirm/order/${merchant}/${amount}/${currency}`
-						: `http://localhost:3000/api/confirm/order/${merchant}/${amount}/${currency}`,
+						? `https://jumga.vercel.app/api/confirm/subscription/${slug}`
+						: `http://localhost:3000/api/confirm/subscription/${slug}`,
 				customer: {
-					email: "ed@gmail.com",
+					email: `${slug}@jumga.vercel.app`,
 				},
 				customizations: {
 					title: "Jumga Ecommerce platform",
@@ -52,9 +38,13 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 		);
 
 		redirect_url = response.data.data.link;
+		console.log(redirect_url);
+		res.writeHead(307, { Location: redirect_url });
+		res.end();
 	} catch (error) {
 		error = true;
 	}
 
-	res.send({ redirect_url, error });
+	// use this instead to redirect from frontend
+	// res.send({ redirect_url, error });
 };
