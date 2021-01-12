@@ -20,7 +20,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 			const { amount, currency, status } = response.data.data;
 
 			if (
-				amount == params[1] &&
+				`${amount}` === params[1] &&
 				currency === params[2] &&
 				status === "successful"
 			) {
@@ -32,6 +32,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 					Location: `/merchants/${params[0]}/confirm-order?status=${status}&tx_ref=${tx_ref}`,
 				});
 			}
-		} catch (error) {}
+		} catch (error) {
+			res.writeHead(307, {
+				Location: `/merchants/${params[0]}/confirm-order?status=${status}&tx_ref=${tx_ref}`,
+			});
+		}
 	}
+
+	res.end();
 };
