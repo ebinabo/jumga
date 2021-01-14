@@ -38,13 +38,13 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 		);
 
 		redirect_url = response.data.data.link;
-		console.log(redirect_url);
-		res.writeHead(307, { Location: redirect_url });
-		res.end();
+		// console.log(redirect_url);
+		// res.writeHead(307, { Location: redirect_url });
+		// res.end();
 	} catch (error) {
 		error = true;
 	}
 
 	// use this instead to redirect from frontend
-	// res.send({ redirect_url, error });
+	res.send({ redirect_url, error });
 };
