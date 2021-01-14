@@ -4,8 +4,16 @@ import { firestore } from "lib/firebase";
 import { useRouter } from "next/router";
 
 export async function getStaticPaths() {
+	let response = await firestore.collection(`merchants`).get(),
+		paths = [];
+
+	response.forEach(doc => {
+		const { id: slug } = doc;
+		paths.push({ params: { slug } });
+	});
+
 	return {
-		paths: [],
+		paths,
 		fallback: true,
 	};
 }
@@ -16,7 +24,7 @@ export async function getStaticProps({ params }) {
 			.collection(`merchants/${params.slug}/products`)
 			.get();
 
-	response.forEach((doc) => {
+	response.forEach(doc => {
 		products.push({ id: doc.id, ...doc.data() });
 	});
 
@@ -38,7 +46,7 @@ export default function MerchantStore({ products }) {
 			<main>
 				<div className="products-container">
 					{products &&
-						products.map((product) => (
+						products.map(product => (
 							<Product
 								key={product.id}
 								product={product}

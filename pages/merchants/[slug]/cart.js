@@ -1,9 +1,35 @@
 import axios from "axios";
 import { useCart } from "lib/cart";
+import { firestore } from "lib/firebase";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-export default function Cart() {
+export async function getStaticProps({ params }) {
+	let response = await firestore.doc(`merchants/${params.slug}`).get();
+
+	let data = response.data();
+
+	return {
+		props: { data },
+	};
+}
+
+export async function getStaticPaths() {
+	let response = await firestore.collection(`merchants`).get(),
+		paths = [];
+
+	response.forEach(doc => {
+		const { id: slug } = doc;
+		paths.push({ params: { slug } });
+	});
+
+	return {
+		paths,
+		fallback: true,
+	};
+}
+
+export default function Cart({ data }) {
 	const { cart, removeItem } = useCart();
 	const [total, setTotal] = useState(0);
 	const {
@@ -30,6 +56,7 @@ export default function Cart() {
 		const response = await axios.post(url, {
 			amount: total,
 			merchant: slug,
+			subaccount: data.subAccount,
 			cart,
 		});
 
