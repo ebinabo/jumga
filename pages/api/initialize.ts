@@ -2,16 +2,23 @@ import { firestore } from "lib/firebase";
 import { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 
+const max = (x, y) => (x <= y ? y : x);
+
 export default async (req: NextApiRequest, res: NextApiResponse) => {
 	res.statusCode = 200;
 	res.setHeader("Content-Type", "application/json");
 
-	let { amount, cart, merchant, subaccount } = req.body,
+	let {
+			amount,
+			cart,
+			merchant,
+			subAccount,
+			deliveryCharge,
+			dispatchSubaccount,
+		} = req.body,
 		redirect_url,
 		currency = "NGN",
 		error;
-
-	// console.log(subaccount);
 
 	let { tx_ref } = req.query;
 
@@ -31,12 +38,25 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 				amount,
 				currency: "NGN",
 				payment_options: "account, banktransfer, card",
+				subaccounts: [
+					{
+						id: subAccount,
+						transaction_charge_type: "flat_subaccount",
+						transaction_charge: amount - max(amount * 0.15, 2000),
+					},
+					{
+						id: dispatchSubaccount,
+						transaction_charge_type: "flat_subaccount",
+						transaction_charge:
+							deliveryCharge - max(deliveryCharge * 0.15, 2000),
+					},
+				],
 				redirect_url:
 					process.env.NODE_ENV === "production"
 						? `https://jumga.vercel.app/api/confirm/order/${merchant}/${amount}/${currency}`
 						: `http://localhost:3000/api/confirm/order/${merchant}/${amount}/${currency}`,
 				customer: {
-					email: "ed@gmail.com",
+					email: "customer@jumga.vercel.app",
 				},
 				customizations: {
 					title: "Jumga Ecommerce platform",

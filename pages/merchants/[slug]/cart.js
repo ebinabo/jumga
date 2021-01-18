@@ -31,15 +31,16 @@ export async function getStaticPaths() {
 
 export default function Cart({ data }) {
 	const { cart, removeItem } = useCart();
-	const [total, setTotal] = useState(0);
+	const [subtotal, setSubtotal] = useState(0);
 	const {
 		push,
 		query: { slug, tx_ref },
 	} = useRouter();
+	let deliveryCharge = 5000;
 
 	useEffect(() => {
 		if (cart?.length) {
-			setTotal(
+			setSubtotal(
 				cart
 					.reduce((acc, { amount, price }) => {
 						return acc + amount * price;
@@ -54,10 +55,12 @@ export default function Cart({ data }) {
 			? `/api/initialize?tx_ref=${tx_ref}`
 			: "/api/initialize";
 		const response = await axios.post(url, {
-			amount: total,
+			amount: subtotal,
 			merchant: slug,
-			subaccount: data.subAccount,
+			subAccount: data.subAccount,
+			dispatchSubaccount: data.dispatchSubaccount,
 			cart,
+			deliveryCharge,
 		});
 
 		const { redirect_url, error } = response.data;
@@ -87,7 +90,7 @@ export default function Cart({ data }) {
 								<p>x{amount}</p>
 							</div>
 
-							<p>USD {price}</p>
+							<p>NGN {price}</p>
 
 							<button
 								className="h-6"
@@ -99,10 +102,21 @@ export default function Cart({ data }) {
 					))}
 					<div>
 						<p>
-							<span className="font-semibold">Total: </span>
-							USD {total}
+							<span className="font-semibold">Sub Total: </span>
+							NGN {subtotal}
 						</p>
 
+						<p>
+							<span className="font-semibold">
+								Delivery Charge:{" "}
+							</span>
+							NGN {deliveryCharge}
+						</p>
+
+						<p>
+							<span className="font-semibold">Total: </span>
+							NGN {subtotal + deliveryCharge}
+						</p>
 						<button onClick={checkout}>Checkout</button>
 					</div>
 				</div>
