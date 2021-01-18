@@ -1,18 +1,28 @@
 import axios from "axios";
 import { Authentication } from "components";
 import { useAuth } from "lib/auth";
+import { firestore } from "lib/firebase";
 import { useMerchant } from "lib/merchants";
 import { useRouter } from "next/router";
 import { useEffect, useReducer } from "react";
 
-export default function Profile() {
+export async function getStaticProps() {
+	const response = await firestore.doc('internal/accounts').get()
+
+	return {
+		props: {accountNumbers: response.data().available},
+		revalidate: 1
+	}
+}
+
+export default function Profile({ accountNumbers }) {
 	const merchant = useMerchant();
 	const { user } = useAuth();
 	const { push } = useRouter();
 	const [financials, dispatch] = useReducer(
 		(state, { key, value }) => ({ ...state, [key]: value }),
 		{
-			account_number: "0690000037",
+			account_number: accountNumbers[0],
 			account_bank: "044",
 			business_name: "",
 			country: "NG",
@@ -84,7 +94,7 @@ export default function Profile() {
 
 			<div className="mt-4">
 				<h2 className="text-3xl">Financial</h2>
-				<InputFields state={financials} />
+				<InputFields state={financials} accountNumbers={accountNumbers} dispatch={dispatch} />
 				{merchant.subaccount_id ? (
 					<>
 						<h3 className="mt-2 uppercase text-sm text-gray-600 font-semibold">
@@ -111,7 +121,7 @@ export default function Profile() {
 	);
 }
 
-function InputFields({ state }) {
+function InputFields({ state, accountNumbers, dispatch }) {
 	const { country, split_value, account_bank, ...visibleFields } = state;
 
 	let titlefy = slug =>
@@ -123,21 +133,42 @@ function InputFields({ state }) {
 	return (
 		<div className="space-y-2">
 			{Object.keys(visibleFields).map(key => (
-				<div key={key}>
-					<label
-						className="uppercase text-sm text-gray-600 font-semibold"
-						htmlFor={key}
-					>
-						{titlefy(key)}
-					</label>
-					<input
-						className="block"
-						type="text"
-						readOnly
-						id={key}
-						value={state[key]}
-					/>
-				</div>
+				key === 'account_number' ? (
+					<div key={key}>
+						<label
+							className="uppercase text-sm text-gray-600 font-semibold block"
+							htmlFor={key}
+						>Account Number</label>
+						<select 
+							key={key}
+							onChange={e => {
+								dispatch({ key: 'account_number', value: e.target.value })
+							}} 
+						>
+							{
+								accountNumbers.map(
+									num => <option key={num} value={num}>{num}</option>
+								)
+							}
+						</select>
+					</div>
+				) : (
+					<div key={key}>
+						<label
+							className="uppercase text-sm text-gray-600 font-semibold"
+							htmlFor={key}
+						>
+							{titlefy(key)}
+						</label>
+						<input
+							className="block"
+							type="text"
+							readOnly
+							id={key}
+							value={state[key]}
+						/>
+					</div>
+				)
 			))}
 		</div>
 	);

@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
-import { firestore } from "lib/firebase";
+import firebase, { firestore } from "lib/firebase";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
 	res.statusCode = 200;
@@ -32,6 +32,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 		await firestore
 			.doc(`merchants/${slug}`)
 			.set({ subaccount_id, dispatchSubaccount }, { merge: true });
+
+		await firestore
+			.doc("internal/accounts")
+			.update({
+				available: firebase.firestore.FieldValue.arrayRemove(req.body.account_number)
+			})
 	} catch (err) {
 		error = true;
 	}
