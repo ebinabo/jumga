@@ -35,7 +35,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 			"https://api.flutterwave.com/v3/payments",
 			{
 				tx_ref,
-				amount,
+				amount: amount + deliveryCharge,
 				currency: "NGN",
 				payment_options: "account, banktransfer, card",
 				subaccounts: [
@@ -53,8 +53,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 				],
 				redirect_url:
 					process.env.NODE_ENV === "production"
-						? `https://jumga.vercel.app/api/confirm/order/${merchant}/${amount}/${currency}`
-						: `http://localhost:3000/api/confirm/order/${merchant}/${amount}/${currency}`,
+						? `https://jumga.vercel.app/api/confirm/order/${merchant}/${amount + deliveryCharge}/${currency}`
+						: `http://localhost:3000/api/confirm/order/${merchant}/${amount + deliveryCharge}/${currency}`,
 				customer: {
 					email: "customer@jumga.vercel.app",
 				},

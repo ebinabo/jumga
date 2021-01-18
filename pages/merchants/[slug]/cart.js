@@ -45,7 +45,6 @@ export default function Cart({ data }) {
 					.reduce((acc, { amount, price }) => {
 						return acc + amount * price;
 					}, 0)
-					.toFixed(2)
 			);
 		}
 	}, [cart]);

@@ -37,7 +37,7 @@ export default function Product({ product, showCart }) {
 			</div>
 			<p className="truncate">{title}</p>
 
-			<p>USD {price}</p>
+			<p>NGN {price}</p>
 
 			<div className="flex items-center transform origin-left scale-75">
 				{[0, 1, 2, 3, 4].map((index) => (
