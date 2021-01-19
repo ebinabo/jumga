@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @import "swiper/swiper-bundle.min.css";
+@import "nprogress/nprogress.css";
 
 @layer components {
 	.wrapper {

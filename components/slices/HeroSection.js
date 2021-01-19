@@ -7,15 +7,19 @@ export default function HeroSection({ slice }) {
     } = slice
 
     return (
-        <div>
-            <h1>{RichText.asText(header)}</h1>
+        <div className="h-fill grid place-content-center">
+            <header>
+                <RichText render={header} />
+            </header>
             <p>{RichText.asText(supporting_text)}</p>
-            {
-                buttons.map(
-                    ({content, type}, index) => 
-                    <button key={index}>{content}</button> 
-                )
-            }
+            <div className="flex mt-4">
+                {
+                    buttons.map(
+                        ({content, type}, index) => 
+                        <button key={index}>{content}</button> 
+                    )
+                }
+            </div>
         </div>
     )
 }
